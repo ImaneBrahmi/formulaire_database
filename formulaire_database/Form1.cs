@@ -7,20 +7,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Data.OleDB;
-using static System.Net.Mime.MediaTypeNames;
+
 using System.Data.OleDb;
 
 namespace formulaire_database
 {
     public partial class Form1 : Form
     {
-        static string chaine = @"Data Source=localhost;Initial Catalog=BDGED_copy;Integrated Security=True";
-        ";Data Source=C:\Users\Hp\Documents\formule.accdb"
-        //"Server=.\SQLEXPRESS; DataBase=VotreBD;USER ID=sa; PASSWORD="
-        static OleDbConnection cnx = new OleDblConnection(chaine);
+        static readonly string chaine = "@Provider = Microsoft.ACE.OLEDB.12.0; Data Source = C:Users_Hp_Documents_formule.accdb";
+
+        static OleDbConnection cnx = new OleDbConnection(chaine);
         static OleDbCommand cmd = new OleDbCommand();
         static OleDbDataAdapter adapter = new OleDbDataAdapter(cmd);
+        Ado d = new Ado();
         public Form1()
         {
             InitializeComponent();
@@ -44,13 +43,18 @@ namespace formulaire_database
             adapter.Fill(dt);
             dataGridView1.DataSource = dt;
             cnx.Close();
+            (this.Owner as Form1).btndelete.Enabled = true;
+            (this.Owner as Form1).btnUpdate.Enabled = true;
+            (this.Owner as Form1).btnselect.Enabled = true;
+            (this.Owner as Form1).btnconfirmer.Enabled = false;
+            (this.Owner as Form1).btnannuler.Enabled = false;
         }
 
         private void btninsert_Click(object sender, EventArgs e)
         {
             if (txtReference.Text == "" || txttitre.Text == "" || txtprix.Text == "")
             {
-                MessageBox.Show("remplir les champs")
+                MessageBox.Show("remplir les champs");
                     return;
             }
             cnx.Open();
@@ -60,7 +64,7 @@ namespace formulaire_database
             cnx.Close();
             for (int i = 0; i < d.ds.Tables["livre"].Rows.Count; i++)
             {
-                if (txt.Refernce.Text == d.ds.Tables["livre"].Rows[i][0].TotString())
+                if (txtRefernce.Text == d.ds.Tables["livre"].Rows[i][0].ToString())
                 {
                     MessageBox.Show("le livre deja existe");
                     return;
@@ -69,9 +73,11 @@ namespace formulaire_database
             d.ds.Tables["livre"].Rows.Add(d.ligne);
             MessageBox.Show("le livre ajouter avec succes");
             dataGridView1.DataSource = d.ds.Tables["livre"];
-            (this.Owner as Form1).btnDelete.Enabled = false;
+            (this.Owner as Form1).btndelete.Enabled = false;
             (this.Owner as Form1).btnUpdate.Enabled = false;
             (this.Owner as Form1).btnselect.Enabled = false;
+            (this.Owner as Form1).btnconfirmer.Enabled = true;
+            (this.Owner as Form1).btnannuler.Enabled = true;
 
         }
 
@@ -79,7 +85,7 @@ namespace formulaire_database
         {
             if (txtReference.Text == "" || txttitre.Text == "" || txtprix.Text == "")
             {
-                MessageBox.Show("remplir les champs")
+                MessageBox.Show("remplir les champs");
                     return;
             }
 
@@ -91,7 +97,7 @@ namespace formulaire_database
             Boolean tr = false;
             for (int i = 0; i < d.ds.Tables["livre"].Rows.Count; i++)
             {
-                if (txtId_dossier.Refernce.Text == d.ds.Tables["livre"].Rows[i][0].TotString())
+                if (txtRefernce.Text == d.ds.Tables["livre"].Rows[i][0].TotString())
                 {
                     tr = true;
                     d.ds.Tables["livre"].Rows[i][1] = txtRefernce.Text;
@@ -107,9 +113,11 @@ namespace formulaire_database
             {
                 MessageBox.Show("le livre n'existe pas");
             }
-            (this.Owner as Form1).btnDelete.Enabled = false;
-            (this.Owner as Form1).btnInsert.Enabled = false;
+            (this.Owner as Form1).btndelete.Enabled = false;
+            (this.Owner as Form1).btninsert.Enabled = false;
             (this.Owner as Form1).btnselect.Enabled = false;
+            (this.Owner as Form1).btnconfirmer.Enabled = true;
+            (this.Owner as Form1).btnannuler.Enabled = true;
 
             cnx.Open();
             cmd.Connection = cnx;
@@ -129,7 +137,7 @@ namespace formulaire_database
                 Boolean tr = false;
                 for (int i = 0; i < d.ds.Tables["livre"].Rows.Count; i++)
                 {
-                    if (txtId_dossier.Refernce.Text == d.ds.Tables["livre"].Rows[i][0].TotString())
+                    if (txRefernce.Text == d.ds.Tables["livre"].Rows[i][0].ToString())
                     {
                         tr = true;
                         d.ds.Tables["livre"].Rows[i].Delete();
@@ -141,11 +149,14 @@ namespace formulaire_database
                 }
                 if (tr == false)
                 {
-                    MessageBox.Show("le livre n'exicte" pas);
+                    MessageBox.Show("le livre n'exicte pas");
                 }
-                (this.Owner as Form1).btnInsert.Enabled = false;
+                (this.Owner as Form1).btninsert.Enabled = false;
                 (this.Owner as Form1).btnUpdate.Enabled = false;
                 (this.Owner as Form1).btnselect.Enabled = false;
+                (this.Owner as Form1).btnconfirmer.Enabled = true;
+                (this.Owner as Form1).btnannuler.Enabled = true;
+
                 cnx.Open();
                 cmd.Connection = cnx;
                 cmd.CommandText = "delete from livre where Refernce='" + txtRefernce.Text + "' ";
@@ -153,7 +164,23 @@ namespace formulaire_database
                 cnx.Close();
             }
         }
-       
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnconfirmer_Click(object sender, EventArgs e)
+        {
+            d.bc = new OleDbCommandBuilder(d.dap);
+            d.dap.Update(d.ds, "livre");
+            MessageBox.Show("les donnes enregister avec succes");
+        }
     }
  }
 
